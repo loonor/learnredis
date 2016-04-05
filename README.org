@@ -237,5 +237,176 @@ Redis 中 集合是通过哈希表实现的，所以添加，删除，查找的�
 集合是通过哈希表实现的，所以添加，删除，查找的复杂度都是O(1)。 集合中最大的成员数为 232 - 1 (4294967295,
  每个集合可存储40多亿个成员)。 
 
+| 序列 | 命令及描述                                                                                                       |
+|------+------------------------------------------------------------------------------------------------------------------|
+| 1	  | ZADD key score1 member1 [score2 member2]向有序集合添加一个或多个成员，或者更新已存在成员的分数                   |
+| 2	  | ZCARD key获取有序集合的成员数                                                                                    |
+| 3	  | ZCOUNT key min max计算在有序集合中指定区间分数的成员数                                                           |
+| 4	  | ZINCRBY key increment member有序集合中对指定成员的分数加上增量 increment                                         |
+| 5	  | ZINTERSTORE destination numkeys key [key ...]计算给定的一个或多个有序集的交集并将结果集存储在新的有序集合 key 中 |
+| 6	  | ZLEXCOUNT key min max在有序集合中计算指定字典区间内成员数量                                                      |
+| 7	  | ZRANGE key start stop [WITHSCORES]通过索引区间返回有序集合成指定区间内的成员                                     |
+| 8	  | ZRANGEBYLEX key min max [LIMIT offset count]通过字典区间返回有序集合的成员                                       |
+| 9	  | ZRANGEBYSCORE key min max [WITHSCORES] [LIMIT]通过分数返回有序集合指定区间内的成员                               |
+| 10	 | ZRANK key member返回有序集合中指定成员的索引                                                                     |
+| 11	 | ZREM key member [member ...]移除有序集合中的一个或多个成员                                                       |
+| 12	 | ZREMRANGEBYLEX key min max移除有序集合中给定的字典区间的所有成员                                                 |
+| 13	 | ZREMRANGEBYRANK key start stop移除有序集合中给定的排名区间的所有成员                                             |
+| 14	 | ZREMRANGEBYSCORE key min max移除有序集合中给定的分数区间的所有成员                                               |
+| 15	 | ZREVRANGE key start stop [WITHSCORES]返回有序集中指定区间内的成员，通过索引，分数从高到底                        |
+| 16	 | ZREVRANGEBYSCORE key max min [WITHSCORES]返回有序集中指定分数区间内的成员，分数从高到低排序                      |
+| 17	 | ZREVRANK key member返回有序集合中指定成员的排名，有序集成员按分数值递减(从大到小)排序                            |
+| 18	 | ZSCORE key member返回有序集中，成员的分数值                                                                      |
+| 19	 | ZUNIONSTORE destination numkeys key [key ...]计算给定的一个或多个有序集的并集，并存储在新的 key 中               |
+| 20	 | ZSCAN key cursor [MATCH pattern] [COUNT count]迭代有序集合中的元素（包括元素成员和元素分值）                     |
+|      |                                                                                                                  |
 
+*** Redis HyperLogLog
 
+Redis 在 2.8.9 版本添加了 HyperLogLog 结构。
+Redis HyperLogLog 是用来做基数统计的算法，HyperLogLog 的优点是，在输入元素的数量或者体积非常非常大时，
+计算基数所需的空间总是固定 的、并且是很小的。在 Redis 里面，每个 HyperLogLog 键只需要花费 12 KB 内存，
+就可以计算接近 2^64 个不同元素的基 数。这和计算基数时，元素越多耗费内存就越多的集合形成鲜明对比。
+但是，因为 HyperLogLog 只会根据输入元素来计算基数，而不会储存输入元素本身，所以 HyperLogLog 
+不能像集合那样，返回输入的各个元素。 
+
+#+BEGIN_SRC shell
+127.0.0.1:6379> PFADD pdb "redis"
+(integer) 1
+127.0.0.1:6379> PFADD pdb "monogdb"
+(integer) 1
+127.0.0.1:6379> PFADD pdb "mysql"
+(integer) 1
+127.0.0.1:6379> PFCOUNT pdb
+(integer) 3
+#+END_SRC
+
+| 序号 | 命令及描述                                                                         |
+|------+------------------------------------------------------------------------------------|
+|    1 | PFADD key element [element ...]添加指定元素到 HyperLogLog 中。                     |
+|    2 | PFCOUNT key [key ...]返回给定 HyperLogLog 的基数估算值。                           |
+|    3 | PFMERGE destkey sourcekey [sourcekey ...]将多个 HyperLogLog 合并为一个 HyperLogLog |
+
+*** Redis发布订阅
+Redis 发布订阅(pub/sub)是一种消息通信模式：发送者(pub)发送消息，订阅者(sub)接收消息。
+
+Redis 客户端可以订阅任意数量的频道。
+
+下图展示了频道 channel1 ， 以及订阅这个频道的三个客户端 —— client2 、 client5 和 client1 之间的关系：
+[[pubsub1.png]]
+
+当有新消息通过 PUBLISH 命令发送给频道 channel1 时， 这个消息就会被发送给订阅它的三个客户端：
+[[pubsub2.png]]
+#+BEGIN_SRC shell
+$ redis-cli -h 127.0.0.1 -p 6379 -a "服务端密码" #登录服务器
+127.0.0.1:6379> PSUBSCRIBE redisChat          #订阅redisChat
+Reading messages... (press Ctrl-C to quit)
+1) "psubscribe"
+2) "redisChat"
+3) (integer) 1
+#+END_SRC
+服务端发送消息
+#+BEGIN_SRC shell
+127.0.0.1:6379> PUBLISH redisChat "Redis is a great caching technique"
+(integer) 1
+127.0.0.1:6379> PUBLISH redisChat "Redis 发送中文消息"
+(integer) 1
+127.0.0.1:6379> UNSUBSCRIBE redisChat
+1) "unsubscribe"
+2) "redisChat"
+3) (integer) 0
+#+END_SRC
+客户端接收消息
+#+BEGIN_SRC shell
+127.0.0.1:6379> PSUBSCRIBE redisChat
+Reading messages... (press Ctrl-C to quit)
+1) "psubscribe"
+2) "redisChat"
+3) (integer) 1
+1) "pmessage"
+2) "redisChat"
+3) "redisChat"
+4) "Redis is a great caching technique"
+1) "pmessage"
+2) "redisChat"
+3) "redisChat"
+4) "Redis \xe5\x8f\x91\xe9\x80\x81\xe4\xb8\xad\xe6\x96\x87\xe6\xb6\x88\xe6\x81\xaf"
+#+END_SRC
+
+| 序号 | 命令及描述                                                          |
+|------+---------------------------------------------------------------------|
+|    1 | PSUBSCRIBE pattern [pattern ...]订阅一个或多个符合给定模式的频道。  |
+|    2 | PUBSUB subcommand [argument [argument ...]]查看订阅与发布系统状态。 |
+|    3 | PUBLISH channel message将信息发送到指定的频道。                     |
+|    4 | PUNSUBSCRIBE [pattern [pattern ...]]退订所有给定模式的频道          |
+|    5 | SUBSCRIBE channel [channel ...]订阅给定的一个或多个频道的信息。     |
+|    6 | UNSUBSCRIBE [channel [channel ...]]指退订给定的频道。               |
+*** Redis事务
+Redis 事务可以一次执行多个命令， 并且带有以下两个重要的保证：
+事务是一个单独的隔离操作：事务中的所有命令都会序列化、按顺序地执行。事务在执行的过程中，不会被其他客户端发送来的命令请求所打断。
+事务是一个原子操作：事务中的命令要么全部被执行，要么全部都不执行。
+
++ 一个事务从开始到执行会经历以下三个阶段:
+  1) 开始事务。
+  2) 命令入队。
+  3) 执行事务。
+
+#+BEGIN_SRC shell
+$ #以MULTI开始一个事务，然后将多个命令入队到事务中，最后由EXEC命令出发事务
+127.0.0.1:6379> MULTI
+OK
+127.0.0.1:6379> SET book-name "C++ Primer"
+QUEUED
+127.0.0.1:6379> GET book-name
+QUEUED
+127.0.0.1:6379> SADD tag "C++" "Programming" 
+QUEUED
+127.0.0.1:6379> SMEMBERS tag
+QUEUED
+127.0.0.1:6379> EXEC
+1) OK
+2) "C++ Primer"
+3) (integer) 2
+4) 1) "Programming"
+   2) "C++"
+#+END_SRC
+*** Ruby测试管道
+#+BEGIN_SRC shell
+$ gem install redis
+#+END_SRC
+#+BEGIN_SRC ruby
+#!/usr/bin/env ruby
+require 'rubygems'
+require 'redis'
+
+def bench(descr)
+  start = Time.now
+  yield
+  puts "#{descr} #{Time.now-start} seconds"
+end
+
+def without_pipelining
+  r = Redis.new
+  10000.times {                 #ping 10000次
+    r.ping
+  }
+end
+
+def with_pipelining
+  r = Redis.new
+  r.pipelined {
+    10000.times {               #
+      r.ping}
+  }
+end
+bench("without pipelining") {
+  without_pipelining
+}
+
+bench("with pipelining") {
+  with_pipelining
+}
+#+END_SRC
+*** 更多
+[[http://www.redis.cn/]]
+[[http://doc.redisfans.com/]]
