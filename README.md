@@ -69,6 +69,7 @@
 ```
 
 *   Set
+
     Set是string类型的无序集合;是通过哈希表实现的，
     所以添加、删除、查找的复杂度都是O(1)。
 
@@ -93,7 +94,10 @@
 ```
 
 * zset
-和set一样也是string类型元素的集合，且不允许重复的成员，zset的成员是唯一的，但score可以重复
+
+    和set一样也是string类型元素的集合，且不允许重复的成员，
+    zset的成员是唯一的，但score可以重复
+
 ```bash
 127.0.0.1:6379> zadd zdb 0 redis
 (integer) 1
@@ -111,7 +115,7 @@
 
 ## Redis命令
 
-    *   在远程服务上执行命令，语法：```$ redis-cli -h host -p port -a password```
+* 在远程服务上执行命令，语法：```$ redis-cli -h host -p port -a password```
 
 ```redis-cli -h 127.0.0.1 -p 6379 -a "服务端密码"
 ```
@@ -135,7 +139,7 @@
     |15|`RENAMENX key newkey` 仅当 newkey 不存在时，<br/>将 key 改名为 newkey|
     |16|`TYPE key` 返回 key 所储存的值的类型|
 
-    *   __Redis字符串__
+* __Redis字符串__
 
         |序号|命令及描述|
         |---|:--------|
@@ -160,7 +164,7 @@
         |19 |`DECRBY key decrementkey` 所储存的值减去给定的减量值（decrement)|
         |20 |`APPEND key value`如果key已经存在并且是一个字符串， APPEND 命令将 value 追加到 key 原来的值的末尾|
 
-    *  __hash命令__
+* __hash命令__
 
         |序号|命令及描述|
         |----|:--------|
@@ -179,7 +183,7 @@
         |13|`HVALS key`获取哈希表中所有值|
         |14|`HSCAN key cursor [MATCH pattern] [COUNT count]`迭代哈希表中的键值对|
 
-    *   __list__
+* __list__
 
 列表是简单的字符串列表，按照插入顺序排序。你可以添加一个元素导列表的头部（左边）或
 者尾部（右边）一个列表最多可以包含 232 - 1 个元素 (4294967295, 每个列表超过40亿个元素)。
@@ -204,7 +208,8 @@
     |16|`RPUSH key value1 [value2]`在列表中添加一个或多个值|
     |17|`RPUSHX key value`为已存在的列表添加值|
 
-    * __Set__
+* __Set__
+
 是string类型的无序集合。集合成员是唯一的，这就意味着集合中不能出现重复的数据。
 Redis 中 集合是通过哈希表实现的，所以添加，删除，查找的复杂度都是O(1)。
 集合中最大的成员数为 232 - 1 (4294967295, 每个集合可存储40多亿个成员)。
@@ -227,7 +232,7 @@ Redis 中 集合是通过哈希表实现的，所以添加，删除，查找的�
         |14	|`SUNIONSTORE destination key1 [key2]`所有给定集合的并集存储在 destination 集合中|
         |15	|`SSCAN key cursor [MATCH pattern] [COUNT count]`迭代集合中的元素|
 
-    *  __Redis有序集合(sorted set)
+* __Redis有序集合(sorted set)
     
         Redis 有序集合和集合一样也是string类型元素的集合,且不允许重复的成员。
     不同的是每个元素都会关联一个double类型的分数。redis正是通过分数来为集合中的成员进行从小到大的排序。
