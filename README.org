@@ -2,7 +2,7 @@
 ** 安装
 
 + Archlinux: sudo pacman -S redis
-+ 配置文件：/etc/redis.conf。（  [配置参数](./redisconfig.md) ）
++ 配置文件：/etc/redis.conf。[[./redisconfig.md][配置参数]]
 + 启动服务：redis-server #如果没有带当前目录下的redis.conf,将使用/etc/redis.conf配置
 + 启动客户：redis-cli
 
@@ -111,8 +111,9 @@
 
    在远程服务上执行命令，语法：```$ redis-cli -h host -p port -a password```
 
-```redis-cli -h 127.0.0.1 -p 6379 -a "服务端密码"
-```
+#+BEGIN_SRC shell
+$ redis-cli -h 127.0.0.1 -p 6379 -a "服务端密码"
+#+END_SRC
 
 | 序号 | 命令及描述                                                                                                                                                   |
 |------+--------------------------------------------------------------------------------------------------------------------------------------------------------------|
